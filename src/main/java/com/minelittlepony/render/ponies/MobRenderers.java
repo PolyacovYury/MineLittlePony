@@ -71,7 +71,11 @@ public enum MobRenderers implements Setting {
     NPC {
         @Override
         public void register(boolean state, PonyRenderManager pony, RenderManager manager) {
-            pony.switchRenderer(state, manager, EntityNpcPony.class, new RenderPonyNpc<>(manager));
+            try {
+                pony.switchRenderer(state, manager, EntityNpcPony.class, new RenderPonyNpc<>(manager));
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                MineLittlePony.logger.error(e.getMessage());
+            }
         }
     };
 

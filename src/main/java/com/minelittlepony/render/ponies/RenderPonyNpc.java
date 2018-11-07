@@ -1,5 +1,6 @@
 package com.minelittlepony.render.ponies;
 
+import com.minelittlepony.MineLittlePony;
 import com.minelittlepony.model.ModelWrapper;
 import com.minelittlepony.model.PMAPI;
 import com.minelittlepony.pony.data.IPony;
@@ -13,22 +14,24 @@ import com.voxelmodpack.hdskins.HDSkinManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import noppes.npcs.client.renderer.RenderNPCInterface;
 import noppes.npcs.entity.EntityNpcPony;
 
+import java.util.List;
 import java.util.Map;
 
 public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterface<PONY> {
 
     private RenderPonyMob.Proxy<PONY> ponyRenderer;
 
-    public RenderPonyNpc(RenderManager renderManager) throws NoSuchFieldException {
+    public RenderPonyNpc(RenderManager renderManager) throws NoSuchFieldException, IllegalAccessException {
         super(PMAPI.earthpony.getBody(), 0.5F);
-        //noinspection JavaReflectionMemberAccess
-        this.ponyRenderer = new RenderPonyMob.Proxy<PONY>(RenderPonyNpc.class.getField("field_177097_h").get(this), renderManager, PMAPI.earthpony) {
+        //noinspection JavaReflectionMemberAccess,unchecked
+        this.ponyRenderer = new RenderPonyMob.Proxy<PONY>((List<LayerRenderer<PONY>>)RenderPonyNpc.class.getField("field_177097_h").get(this), renderManager, PMAPI.earthpony) {
             @Override
             public ResourceLocation getTexture(PONY entity) {
                 renderPony = new RenderPonyBetter<>(this);
@@ -42,8 +45,7 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
 
             @Override
             public IPony getEntityPony(PONY entity) {
-                //return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity), false);
-                return (IPony) entity;
+                return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity));
             }
 
             class RenderPonyBetter<T extends EntityNpcPony> extends RenderPony<T> {
@@ -116,12 +118,10 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
 
     @Override
     public ResourceLocation getEntityTexture(PONY npc) {
-        if (npc.textureLocation == null) {
-            if (npc.display.skinType == 1 && npc.display.playerProfile != null) {
-                npc.textureLocation = getProfileTexture(npc.display.playerProfile);
-            } else {
-                npc.textureLocation = super.getEntityTexture(npc);
-            }
+        if (npc.textureLocation == null || npc.display.skinType == 1 && npc.display.playerProfile != null) {
+            npc.textureLocation = getProfileTexture(npc.display.playerProfile);
+        } else {
+            npc.textureLocation = super.getEntityTexture(npc);
         }
         return npc.textureLocation;
     }
