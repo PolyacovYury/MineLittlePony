@@ -25,9 +25,10 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
 
     private RenderPonyMob.Proxy<PONY> ponyRenderer;
 
-    public RenderPonyNpc(RenderManager renderManager) {
+    public RenderPonyNpc(RenderManager renderManager) throws NoSuchFieldException {
         super(PMAPI.earthpony.getBody(), 0.5F);
-        this.ponyRenderer = new RenderPonyMob.Proxy<PONY>(layerRenderers, renderManager, PMAPI.earthpony) {
+        //noinspection JavaReflectionMemberAccess
+        this.ponyRenderer = new RenderPonyMob.Proxy<PONY>(RenderPonyNpc.class.getField("field_177097_h").get(this), renderManager, PMAPI.earthpony) {
             @Override
             public ResourceLocation getTexture(PONY entity) {
                 renderPony = new RenderPonyBetter<>(this);
