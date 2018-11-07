@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.*;
 import net.minecraft.entity.passive.*;
+import noppes.npcs.entity.EntityNpcPony;
 
 /**
  * Central location where new entity renderers are registered and applied.
@@ -65,6 +66,12 @@ public enum MobRenderers implements Setting {
         @Override
         public void register(boolean state, PonyRenderManager pony, RenderManager manager) {
             pony.switchRenderer(state, manager, EntityEnderman.class, new RenderEnderStallion(manager));
+        }
+    },
+    NPC {
+        @Override
+        public void register(boolean state, PonyRenderManager pony, RenderManager manager) {
+            pony.switchRenderer(state, manager, EntityNpcPony.class, new RenderPonyNpc<>(manager));
         }
     };
 

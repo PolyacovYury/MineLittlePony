@@ -43,6 +43,7 @@ public class PonyConfig extends SensibleConfig implements Exposable {
     @Expose public boolean illagers = true;
     @Expose public boolean guardians = true;
     @Expose public boolean endermen = true;
+    @Expose public boolean npc = true;
 
     @Expose private float globalScaleFactor = 0.9F;
 
