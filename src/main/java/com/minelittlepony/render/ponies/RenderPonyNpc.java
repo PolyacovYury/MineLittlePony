@@ -14,17 +14,61 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.entity.monster.EntityGuardian;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import noppes.npcs.client.renderer.RenderNPCInterface;
 import noppes.npcs.entity.EntityNpcPony;
 
 import java.util.Map;
 
-public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderPonyMob<PONY> {
+public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterface<PONY> {
 
+    private RenderPonyMob.Proxy<EntityNpcPony> ponyRenderer;
     public RenderPonyNpc(RenderManager renderManager) {
-        super(renderManager, PMAPI.earthpony);//earthpony, only so MineLP code doesn't crash. rather silly idea to separate all the models this much, but oh well.
-        this.renderPony = new RenderPonyBetter(this);
+        super(PMAPI.earthpony.getBody(), 0.5F);//earthpony, only so MineLP code doesn't crash. rather silly idea to separate all the models this much, but oh well.
+        this.ponyRenderer = new RenderPonyMob.Proxy<PONY>(layerRenderers, renderManager, PMAPI.earthpony) {
+            @Override
+            public ResourceLocation getTexture(PONY entity) {
+                renderPony = new RenderPonyBetter(this);
+                return RenderPonyNpc.this.getEntityTexture(entity);
+            }
+            @Override
+            public ModelWrapper getModelWrapper() {
+                return renderPony.playerModel;
+            }
+            @Override
+            public IPony getEntityPony(PONY entity) {
+                //return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity), false);
+                return (IPony) entity;
+            }
+            class RenderPonyBetter<T extends EntityNpcPony> extends RenderPony<T> {
+
+                private final RenderPonyMob.Proxy<T> renderer;
+
+                public RenderPonyBetter(RenderPonyMob.Proxy<T> renderer) {
+                    super(renderer);
+                    this.renderer = renderer;
+                }
+
+                @Override
+                public void updateModel(T entity) {
+                    //super.updateModel(entity);
+                    //pony = renderer.getEntityPony(entity);
+                    IPony pony = (IPony) entity;
+                    ModelWrapper wrapper = pony.getRace(false).getModel().getModel(true);
+                    RenderPonyNpc.this.setMainModel(this.setPonyModel(wrapper));
+                    //playerModel.apply(entity.getMyLogic(PonyLogicReasoning.VISUAL).getPonyTypeInfo());
+                    super.updateModel(entity);
+                }
+
+                @Override
+                public IPony getPony(T entity) {
+                    updateModel(entity);
+                    return (IPony) entity;
+                }
+            }
+        };
     }
 
     protected void setMainModel(ModelBase model) {
@@ -33,12 +77,13 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderPonyMob<PON
 
     @Override
     public void preRenderCallback(PONY entity, float partialTickTime) {
+        ponyRenderer.preRenderCallback(entity, partialTickTime);
         super.preRenderCallback(entity, partialTickTime);
     }
 
     @Override
     protected boolean bindEntityTexture(PONY entity) {
-        ResourceLocation resourcelocation = this.getTexture(entity);
+        ResourceLocation resourcelocation = this.getEntityTexture(entity);
 
         if (resourcelocation == null) {
             return false;
@@ -66,7 +111,7 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderPonyMob<PON
     }
 
     @Override
-    public ResourceLocation getTexture(PONY npc) {
+    public ResourceLocation getEntityTexture(PONY npc) {
         if(npc.textureLocation == null){
             if(npc.display.skinType == 1 && npc.display.playerProfile != null){
                 npc.textureLocation = getProfileTexture(npc.display.playerProfile);
@@ -79,55 +124,17 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderPonyMob<PON
 
     @Override
     public void doRender(PONY entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        IPony pony = this.getEntityPony(entity);
+        IPony pony = this.ponyRenderer.getEntityPony(entity);
         IPonyData ponydata = pony.getMetadata();
 
         ModelWrapper wrapper = pony.getRace(false).getModel().getModel(true);
-        mainModel = renderPony.setPonyModel(wrapper);
-        renderPony.updateModel(entity);
+        mainModel = ponyRenderer.getInternalRenderer().setPonyModel(wrapper);
+        ponyRenderer.getInternalRenderer().updateModel(entity);
         wrapper.apply(ponydata);
         try {
             super.doRender(entity, x, y, z, entityYaw, partialTicks);
         } finally {
             mainModel = null;
-        }
-    }
-
-    @Override
-    public ModelWrapper getModelWrapper() {
-        return renderPony.playerModel;
-    }
-
-    @Override
-    public IPony getEntityPony(PONY entity) {
-        //return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity), false);
-        return (IPony) entity;
-    }
-
-    public class RenderPonyBetter<T extends EntityNpcPony> extends RenderPony<T> {
-
-        private final RenderPonyNpc renderer;
-
-        public RenderPonyBetter(RenderPonyNpc renderer) {
-            super(renderer);
-            this.renderer = renderer;
-        }
-
-        @Override
-        public void updateModel(T entity) {
-            //super.updateModel(entity);
-            //pony = renderer.getEntityPony(entity);
-            IPony pony = (IPony) entity;
-            ModelWrapper wrapper = pony.getRace(false).getModel().getModel(true);
-            renderer.setMainModel(this.setPonyModel(wrapper));
-            //playerModel.apply(entity.getMyLogic(PonyLogicReasoning.VISUAL).getPonyTypeInfo());
-            super.updateModel(entity);
-        }
-
-        @Override
-        public IPony getPony(T entity) {
-            updateModel(entity);
-            return (IPony) entity;
         }
     }
 }
