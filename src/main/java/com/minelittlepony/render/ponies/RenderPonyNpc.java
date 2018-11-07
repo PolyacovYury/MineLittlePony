@@ -14,7 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.entity.monster.EntityGuardian;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import noppes.npcs.client.renderer.RenderNPCInterface;
@@ -24,24 +23,28 @@ import java.util.Map;
 
 public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterface<PONY> {
 
-    private RenderPonyMob.Proxy<EntityNpcPony> ponyRenderer;
+    private RenderPonyMob.Proxy<PONY> ponyRenderer;
+
     public RenderPonyNpc(RenderManager renderManager) {
-        super(PMAPI.earthpony.getBody(), 0.5F);//earthpony, only so MineLP code doesn't crash. rather silly idea to separate all the models this much, but oh well.
+        super(PMAPI.earthpony.getBody(), 0.5F);
         this.ponyRenderer = new RenderPonyMob.Proxy<PONY>(layerRenderers, renderManager, PMAPI.earthpony) {
             @Override
             public ResourceLocation getTexture(PONY entity) {
                 renderPony = new RenderPonyBetter(this);
                 return RenderPonyNpc.this.getEntityTexture(entity);
             }
+
             @Override
             public ModelWrapper getModelWrapper() {
                 return renderPony.playerModel;
             }
+
             @Override
             public IPony getEntityPony(PONY entity) {
                 //return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity), false);
                 return (IPony) entity;
             }
+
             class RenderPonyBetter<T extends EntityNpcPony> extends RenderPony<T> {
 
                 private final RenderPonyMob.Proxy<T> renderer;
@@ -93,7 +96,7 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
         }
     }
 
-    private  ResourceLocation getProfileTexture(GameProfile profile) {
+    private ResourceLocation getProfileTexture(GameProfile profile) {
         ResourceLocation skin = HDSkinManager.INSTANCE.getTextures(profile).get(MinecraftProfileTexture.Type.SKIN);
         if (skin != null && Pony.getBufferedImage(skin) != null) {
             return skin;
@@ -112,8 +115,8 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
 
     @Override
     public ResourceLocation getEntityTexture(PONY npc) {
-        if(npc.textureLocation == null){
-            if(npc.display.skinType == 1 && npc.display.playerProfile != null){
+        if (npc.textureLocation == null) {
+            if (npc.display.skinType == 1 && npc.display.playerProfile != null) {
                 npc.textureLocation = getProfileTexture(npc.display.playerProfile);
             } else {
                 npc.textureLocation = super.getEntityTexture(npc);
