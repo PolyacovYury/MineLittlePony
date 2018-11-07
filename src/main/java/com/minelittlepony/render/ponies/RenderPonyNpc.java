@@ -47,34 +47,31 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
             public IPony getEntityPony(PONY entity) {
                 return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity));
             }
-
-            class RenderPonyBetter<T extends EntityNpcPony> extends RenderPony<T> {
-
-                private final RenderPonyMob.Proxy<T> renderer;
-
-                public RenderPonyBetter(RenderPonyMob.Proxy<T> renderer) {
-                    super(renderer);
-                    this.renderer = renderer;
-                }
-
-                @Override
-                public void updateModel(T entity) {
-                    //super.updateModel(entity);
-                    //pony = renderer.getEntityPony(entity);
-                    IPony pony = (IPony) entity;
-                    ModelWrapper wrapper = pony.getRace(false).getModel().getModel(true);
-                    RenderPonyNpc.this.setMainModel(this.setPonyModel(wrapper));
-                    //playerModel.apply(entity.getMyLogic(PonyLogicReasoning.VISUAL).getPonyTypeInfo());
-                    super.updateModel(entity);
-                }
-
-                @Override
-                public IPony getPony(T entity) {
-                    updateModel(entity);
-                    return (IPony) entity;
-                }
-            }
         };
+    }
+
+    class RenderPonyBetter<T extends EntityNpcPony> extends RenderPony<T> {
+
+        private final RenderPonyMob.Proxy<T> renderer;
+
+        public RenderPonyBetter(RenderPonyMob.Proxy<T> renderer) {
+            super(renderer);
+            this.renderer = renderer;
+        }
+
+        @Override
+        public void updateModel(T entity) {
+            IPony pony = renderer.getEntityPony(entity);
+            ModelWrapper wrapper = pony.getRace(false).getModel().getModel(true);
+            RenderPonyNpc.this.setMainModel(this.setPonyModel(wrapper));
+            super.updateModel(entity);
+        }
+
+        @Override
+        public IPony getPony(T entity) {
+            updateModel(entity);
+            return renderer.getEntityPony(entity);
+        }
     }
 
     protected void setMainModel(ModelBase model) {
@@ -132,9 +129,9 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
         IPonyData ponydata = pony.getMetadata();
 
         ModelWrapper wrapper = pony.getRace(false).getModel().getModel(true);
+        wrapper.apply(ponydata);
         mainModel = ponyRenderer.getInternalRenderer().setPonyModel(wrapper);
         ponyRenderer.getInternalRenderer().updateModel(entity);
-        wrapper.apply(ponydata);
         try {
             super.doRender(entity, x, y, z, entityYaw, partialTicks);
         } finally {
