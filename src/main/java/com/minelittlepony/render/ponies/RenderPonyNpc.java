@@ -30,7 +30,7 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
         this.ponyRenderer = new RenderPonyMob.Proxy<PONY>(layerRenderers, renderManager, PMAPI.earthpony) {
             @Override
             public ResourceLocation getTexture(PONY entity) {
-                renderPony = new RenderPonyBetter(this);
+                renderPony = new RenderPonyBetter<>(this);
                 return RenderPonyNpc.this.getEntityTexture(entity);
             }
 
