@@ -39,11 +39,6 @@ public class RenderPonyNpc<PONY extends EntityNpcPony> extends RenderNPCInterfac
             }
 
             @Override
-            public ModelWrapper getModelWrapper() {
-                return renderPony.playerModel;
-            }
-
-            @Override
             public IPony getEntityPony(PONY entity) {
                 return MineLittlePony.getInstance().getManager().getPony(getEntityTexture(entity));
             }
